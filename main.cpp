@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -17,6 +19,9 @@ struct Zgloszenie {
 
 vector<Zgloszenie> zgloszenia;
 int nastepneId = 1;
+
+void zapiszDoPliku();
+void wczytajZPliku();
 
 void wyczyscBufor()
 {
@@ -118,6 +123,7 @@ void dodajZgloszenie()
     nowe.status = "Nowe";
 
     zgloszenia.push_back(nowe);
+    zapiszDoPliku();
 
     cout << "\nZgloszenie zostalo dodane.\n";
 }
@@ -200,6 +206,7 @@ void zmienStatusZgloszenia()
 
     cout << "\nAktualny status: " << zgloszenia[indeks].status << endl;
     zgloszenia[indeks].status = wybierzStatus();
+    zapiszDoPliku();
 
     cout << "Status zostal zmieniony.\n";
 }
@@ -220,6 +227,7 @@ void usunZgloszenie()
     }
 
     zgloszenia.erase(zgloszenia.begin() + indeks);
+    zapiszDoPliku();
 
     cout << "Zgloszenie zostalo usuniete.\n";
 }
@@ -249,6 +257,72 @@ void pokazStatystyki()
     cout << "Odrzucone: " << odrzucone << endl;
 }
 
+void zapiszDoPliku()
+{
+    ofstream plik("zgloszenia.txt");
+
+    if (!plik.is_open()) {
+        cout << "Nie udalo sie otworzyc pliku do zapisu.\n";
+        return;
+    }
+
+    for (const Zgloszenie& z : zgloszenia) {
+        plik << z.id << ";"
+             << z.tytul << ";"
+             << z.opis << ";"
+             << z.kategoria << ";"
+             << z.lokalizacja << ";"
+             << z.priorytet << ";"
+             << z.status << "\n";
+    }
+
+    plik.close();
+}
+
+void wczytajZPliku()
+{
+    ifstream plik("zgloszenia.txt");
+
+    if (!plik.is_open()) {
+        return;
+    }
+
+    zgloszenia.clear();
+
+    string linia;
+    int maxId = 0;
+
+    while (getline(plik, linia)) {
+        stringstream ss(linia);
+        string idStr;
+        Zgloszenie z;
+
+        getline(ss, idStr, ';');
+        getline(ss, z.tytul, ';');
+        getline(ss, z.opis, ';');
+        getline(ss, z.kategoria, ';');
+        getline(ss, z.lokalizacja, ';');
+        getline(ss, z.priorytet, ';');
+        getline(ss, z.status, ';');
+
+        if (idStr.empty()) {
+            continue;
+        }
+
+        z.id = stoi(idStr);
+
+        if (z.id > maxId) {
+            maxId = z.id;
+        }
+
+        zgloszenia.push_back(z);
+    }
+
+    nastepneId = maxId + 1;
+
+    plik.close();
+}
+
 void pokazMenu()
 {
     cout << "\n\n=== SYSTEM ZGLASZANIA USTEREK ===\n";
@@ -264,6 +338,8 @@ void pokazMenu()
 
 int main()
 {
+    wczytajZPliku();
+
     int wybor;
 
     do {
