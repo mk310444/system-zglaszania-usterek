@@ -4,6 +4,7 @@
 #include <limits>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -23,10 +24,34 @@ int nastepneId = 1;
 void zapiszDoPliku();
 void wczytajZPliku();
 
+void wyczyscEkran()
+{
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
 void wyczyscBufor()
 {
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+void pauza()
+{
+    cout << "\nNacisnij Enter, aby kontynuowac...";
+    cin.get();
+}
+
+void pokazNaglowek(const string& tytul)
+{
+    cout << "========================================\n";
+    cout << "        SYSTEM ZGLASZANIA USTEREK       \n";
+    cout << "========================================\n";
+    cout << tytul << "\n";
+    cout << "----------------------------------------\n";
 }
 
 string wybierzKategorie()
@@ -107,7 +132,8 @@ void dodajZgloszenie()
 
     nowe.id = nastepneId++;
 
-    cout << "\n=== DODAWANIE ZGLOSZENIA ===\n";
+    wyczyscEkran();
+    pokazNaglowek("DODAWANIE ZGLOSZENIA");
 
     cout << "Podaj tytul: ";
     getline(cin, nowe.tytul);
@@ -141,7 +167,8 @@ void wyswietlZgloszenie(const Zgloszenie& z)
 
 void wyswietlWszystkieZgloszenia()
 {
-    cout << "\n=== LISTA ZGLOSZEN ===\n";
+    wyczyscEkran();
+    pokazNaglowek("LISTA ZGLOSZEN");
 
     if (zgloszenia.empty()) {
         cout << "Brak zgloszen.\n";
@@ -173,9 +200,12 @@ int znajdzIndeksPoId(int id)
 
 void wyszukajZgloszeniePoId()
 {
+    wyczyscEkran();
+    pokazNaglowek("WYSZUKIWANIE ZGLOSZENIA");
+
     int id;
 
-    cout << "\nPodaj ID zgloszenia: ";
+    cout << "Podaj ID zgloszenia: ";
     cin >> id;
     wyczyscBufor();
 
@@ -191,9 +221,12 @@ void wyszukajZgloszeniePoId()
 
 void zmienStatusZgloszenia()
 {
+    wyczyscEkran();
+    pokazNaglowek("ZMIANA STATUSU ZGLOSZENIA");
+
     int id;
 
-    cout << "\nPodaj ID zgloszenia, ktoremu chcesz zmienic status: ";
+    cout << "Podaj ID zgloszenia, ktoremu chcesz zmienic status: ";
     cin >> id;
     wyczyscBufor();
 
@@ -205,6 +238,7 @@ void zmienStatusZgloszenia()
     }
 
     cout << "\nAktualny status: " << zgloszenia[indeks].status << endl;
+
     zgloszenia[indeks].status = wybierzStatus();
     zapiszDoPliku();
 
@@ -213,9 +247,12 @@ void zmienStatusZgloszenia()
 
 void usunZgloszenie()
 {
+    wyczyscEkran();
+    pokazNaglowek("USUWANIE ZGLOSZENIA");
+
     int id;
 
-    cout << "\nPodaj ID zgloszenia do usuniecia: ";
+    cout << "Podaj ID zgloszenia do usuniecia: ";
     cin >> id;
     wyczyscBufor();
 
@@ -234,6 +271,9 @@ void usunZgloszenie()
 
 void pokazStatystyki()
 {
+    wyczyscEkran();
+    pokazNaglowek("STATYSTYKI");
+
     int nowe = 0;
     int przyjete = 0;
     int wTrakcie = 0;
@@ -241,14 +281,19 @@ void pokazStatystyki()
     int odrzucone = 0;
 
     for (const Zgloszenie& z : zgloszenia) {
-        if (z.status == "Nowe") nowe++;
-        else if (z.status == "Przyjete") przyjete++;
-        else if (z.status == "W trakcie naprawy") wTrakcie++;
-        else if (z.status == "Naprawione") naprawione++;
-        else if (z.status == "Odrzucone") odrzucone++;
+        if (z.status == "Nowe") {
+            nowe++;
+        } else if (z.status == "Przyjete") {
+            przyjete++;
+        } else if (z.status == "W trakcie naprawy") {
+            wTrakcie++;
+        } else if (z.status == "Naprawione") {
+            naprawione++;
+        } else if (z.status == "Odrzucone") {
+            odrzucone++;
+        }
     }
 
-    cout << "\n=== STATYSTYKI ===\n";
     cout << "Wszystkie zgloszenia: " << zgloszenia.size() << endl;
     cout << "Nowe: " << nowe << endl;
     cout << "Przyjete: " << przyjete << endl;
@@ -325,14 +370,19 @@ void wczytajZPliku()
 
 void pokazMenu()
 {
-    cout << "\n\n=== SYSTEM ZGLASZANIA USTEREK ===\n";
-    cout << "1. Dodaj zgloszenie\n";
-    cout << "2. Wyswietl wszystkie zgloszenia\n";
-    cout << "3. Wyszukaj zgloszenie po ID\n";
-    cout << "4. Zmien status zgloszenia\n";
-    cout << "5. Usun zgloszenie\n";
-    cout << "6. Pokaz statystyki\n";
-    cout << "0. Zakoncz program\n";
+    wyczyscEkran();
+
+    cout << "========================================\n";
+    cout << "        SYSTEM ZGLASZANIA USTEREK       \n";
+    cout << "========================================\n";
+    cout << "[1] Dodaj zgloszenie\n";
+    cout << "[2] Wyswietl wszystkie zgloszenia\n";
+    cout << "[3] Wyszukaj zgloszenie po ID\n";
+    cout << "[4] Zmien status zgloszenia\n";
+    cout << "[5] Usun zgloszenie\n";
+    cout << "[6] Pokaz statystyki\n";
+    cout << "[0] Zakoncz program\n";
+    cout << "========================================\n";
     cout << "Wybor: ";
 }
 
@@ -350,27 +400,35 @@ int main()
         switch (wybor) {
             case 1:
                 dodajZgloszenie();
+                pauza();
                 break;
             case 2:
                 wyswietlWszystkieZgloszenia();
+                pauza();
                 break;
             case 3:
                 wyszukajZgloszeniePoId();
+                pauza();
                 break;
             case 4:
                 zmienStatusZgloszenia();
+                pauza();
                 break;
             case 5:
                 usunZgloszenie();
+                pauza();
                 break;
             case 6:
                 pokazStatystyki();
+                pauza();
                 break;
             case 0:
+                wyczyscEkran();
                 cout << "Zamykanie programu...\n";
                 break;
             default:
                 cout << "Niepoprawny wybor.\n";
+                pauza();
         }
 
     } while (wybor != 0);
